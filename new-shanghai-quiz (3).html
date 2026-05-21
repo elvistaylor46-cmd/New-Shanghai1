@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Shanghai Staff Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#8B2020;
+  --surface:rgba(255,255,255,0.1);
+  --surface2:rgba(255,255,255,0.06);
+  --border:rgba(201,168,76,0.25);
+  --gold:#C9A84C;
+  --gold-l:#E8CC80;
+  --gold-d:rgba(201,168,76,0.18);
+  --cream:#F7F0E0;
+  --cream2:rgba(247,240,224,0.65);
+  --cream3:rgba(247,240,224,0.32);
+  --green:#1D9E75;
+  --gbg:rgba(29,158,117,0.18);
+  --gborder:rgba(29,158,117,0.5);
+}
+html,body{min-height:100%}
+body{
+  background:var(--bg);
+  color:var(--cream);
+  font-family:'DM Sans',sans-serif;
+  font-weight:300;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:2rem 1rem 4rem;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:linear-gradient(rgba(201,168,76,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.07) 1px,transparent 1px);
+  background-size:44px 44px;
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background:radial-gradient(ellipse at 50% 110%,rgba(60,10,10,0.6) 0%,transparent 65%);
+  pointer-events:none;z-index:0;
+}
+.corner{position:fixed;width:60px;height:60px;z-index:1;opacity:0.4}
+.corner svg{width:100%;height:100%}
+.tl{top:16px;left:16px}.tr{top:16px;right:16px;transform:scaleX(-1)}
+.bl{bottom:16px;left:16px;transform:scaleY(-1)}.br{bottom:16px;right:16px;transform:scale(-1)}
+.wrap{position:relative;z-index:2;width:100%;max-width:520px}
+.brand-row{text-align:center;margin-bottom:1.5rem}
+.brand{font-family:'Playfair Display',serif;font-size:13px;letter-spacing:.32em;color:var(--gold);text-transform:uppercase;display:block;margin-bottom:4px}
+.brand-sub{font-size:11px;letter-spacing:.14em;color:var(--cream3);text-transform:uppercase}
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.dl{flex:1;height:.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.dd{width:5px;height:5px;background:var(--gold);transform:rotate(45deg);flex-shrink:0}
+.card{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.card-title{font-family:'Playfair Display',serif;font-size:21px;color:var(--cream);margin-bottom:.3rem;font-weight:400;line-height:1.3}
+.card-sub{font-size:13px;color:var(--cream2);line-height:1.65;margin-bottom:1.25rem}
+input[type=text]{
+  width:100%;background:rgba(0,0,0,0.18);border:.5px solid rgba(201,168,76,0.32);
+  border-radius:8px;color:var(--cream);font-family:'DM Sans',sans-serif;
+  font-size:14px;padding:11px 14px;outline:none;margin-bottom:10px;transition:border-color .2s;
+}
+input[type=text]::placeholder{color:rgba(247,240,224,0.22)}
+input[type=text]:focus{border-color:rgba(201,168,76,.65)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:11px 24px;border-radius:8px;border:.5px solid rgba(201,168,76,.45);
+  background:transparent;color:var(--gold);font-family:'DM Sans',sans-serif;
+  font-size:13px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;
+  transition:all .18s;width:100%;
+}
+.btn:hover{background:var(--gold-d);border-color:var(--gold);color:var(--gold-l)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--gold-d);border-color:var(--gold)}
+.hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hud-score{font-size:13px;font-weight:500;color:var(--gold)}
+.hud-counter{font-size:12px;color:var(--cream3);letter-spacing:.05em}
+.streak{font-size:12px;padding:3px 10px;border-radius:20px;background:rgba(201,168,76,.14);color:var(--gold-l);border:.5px solid rgba(201,168,76,.35);display:none}
+.streak.show{display:inline-block}
+.prog{height:3px;background:rgba(247,240,224,.1);border-radius:2px;margin-bottom:1.1rem;overflow:hidden}
+.prog-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .4s ease}
+.trick-tag{display:inline-block;font-size:10px;padding:2px 9px;border-radius:10px;background:rgba(201,168,76,.14);color:var(--gold);border:.5px solid rgba(201,168,76,.38);margin-bottom:9px;letter-spacing:.06em;text-transform:uppercase}
+.q-text{font-size:15px;font-weight:500;color:var(--cream);line-height:1.55;margin-bottom:1rem}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{
+  background:rgba(0,0,0,.12);border:.5px solid rgba(201,168,76,.14);
+  border-radius:9px;padding:11px 14px;font-size:13px;color:var(--cream2);
+  cursor:pointer;text-align:left;display:flex;align-items:flex-start;gap:10px;
+  transition:all .15s;font-family:'DM Sans',sans-serif;line-height:1.5;width:100%;
+}
+.opt:hover:not(:disabled){background:rgba(255,255,255,.1);border-color:rgba(201,168,76,.4);color:var(--cream)}
+.opt:disabled{cursor:default}
+.opt.correct{background:var(--gbg);border-color:var(--gborder);color:#A8EDCE}
+.opt.wrong{background:rgba(0,0,0,.15);border-color:rgba(247,240,224,.12);color:rgba(247,240,224,.35)}
+.opt-letter{font-size:11px;font-weight:500;color:rgba(247,240,224,.22);min-width:16px;margin-top:1px;flex-shrink:0}
+.opt.correct .opt-letter{color:#5DCAA5}
+.opt.wrong .opt-letter{color:rgba(247,240,224,.18)}
+.feedback{margin-top:.9rem;padding:11px 14px;border-radius:9px;font-size:13px;line-height:1.6;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:var(--gbg);color:#A8EDCE;border:.5px solid var(--gborder)}
+.feedback.wrong{background:rgba(0,0,0,.2);color:var(--cream2);border:.5px solid rgba(247,240,224,.1)}
+.nav{display:flex;justify-content:flex-end;margin-top:.9rem}
+.next-btn{
+  padding:10px 22px;border-radius:8px;border:.5px solid rgba(201,168,76,.4);
+  background:transparent;color:var(--gold);font-family:'DM Sans',sans-serif;
+  font-size:13px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase;
+  transition:all .18s;display:none;
+}
+.next-btn:hover{background:var(--gold-d);border-color:var(--gold)}
+.next-btn:active{transform:scale(.97)}
+.r-emoji{font-size:50px;margin-bottom:.75rem;text-align:center}
+.r-title{font-family:'Playfair Display',serif;font-size:24px;color:var(--gold-l);text-align:center;margin-bottom:.3rem}
+.r-sub{font-size:13px;color:var(--cream2);text-align:center;line-height:1.65;margin-bottom:1.5rem}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.4rem}
+.stat{background:rgba(0,0,0,.2);border:.5px solid rgba(201,168,76,.18);border-radius:10px;padding:.85rem .75rem;text-align:center}
+.stat-n{font-size:22px;font-weight:500;color:var(--gold-l)}
+.stat-l{font-size:11px;color:var(--cream3);margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
+.lb-head{font-size:11px;font-weight:500;color:var(--cream3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-top:1.2rem;border-top:.5px solid rgba(201,168,76,.18)}
+.lb-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:.5px solid rgba(247,240,224,.06);font-size:13px}
+.lb-rank{font-size:13px;min-width:22px}
+.lb-name{flex:1;color:var(--cream2)}
+.lb-pts{color:var(--gold)}
+.lb-date{font-size:11px;color:rgba(247,240,224,.18)}
+.lb-you{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--gbg);color:#5DCAA5;border:.5px solid var(--gborder);margin-left:4px}
+.fun-facts{margin-top:.5rem;background:rgba(0,0,0,.15);border:.5px solid rgba(201,168,76,.18);border-radius:10px;padding:1rem 1.1rem}
+.fun-facts p{font-size:12px;color:var(--cream2);line-height:1.6;margin-bottom:.4rem}
+.fun-facts p:last-child{margin-bottom:0}
+.fun-fact-title{font-size:11px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;font-weight:500}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.pop{animation:popIn .35s cubic-bezier(.34,1.56,.64,1) forwards}
+@media(max-width:480px){body{padding:1.25rem .75rem 3rem}.card{padding:1.1rem}.corner{width:40px;height:40px}}
+</style>
+</head>
+<body>
+
+<div class="corner tl"><svg viewBox="0 0 80 80" fill="none"><path d="M4 76L4 4L76 4" stroke="#C9A84C" stroke-width="1"/><path d="M4 44L4 4L44 4" stroke="#C9A84C" stroke-width="0.5" opacity="0.5"/><circle cx="4" cy="4" r="3" fill="#C9A84C"/></svg></div>
+<div class="corner tr"><svg viewBox="0 0 80 80" fill="none"><path d="M4 76L4 4L76 4" stroke="#C9A84C" stroke-width="1"/><path d="M4 44L4 4L44 4" stroke="#C9A84C" stroke-width="0.5" opacity="0.5"/><circle cx="4" cy="4" r="3" fill="#C9A84C"/></svg></div>
+<div class="corner bl"><svg viewBox="0 0 80 80" fill="none"><path d="M4 76L4 4L76 4" stroke="#C9A84C" stroke-width="1"/><path d="M4 44L4 4L44 4" stroke="#C9A84C" stroke-width="0.5" opacity="0.5"/><circle cx="4" cy="4" r="3" fill="#C9A84C"/></svg></div>
+<div class="corner br"><svg viewBox="0 0 80 80" fill="none"><path d="M4 76L4 4L76 4" stroke="#C9A84C" stroke-width="1"/><path d="M4 44L4 4L44 4" stroke="#C9A84C" stroke-width="0.5" opacity="0.5"/><circle cx="4" cy="4" r="3" fill="#C9A84C"/></svg></div>
+
+<div class="wrap">
+  <div class="brand-row">
+    <span class="brand">New Shanghai</span>
+    <span class="brand-sub">Staff Knowledge Quiz &middot; How well do you really know this place?</span>
+  </div>
+  <div class="divider"><div class="dl"></div><div class="dd"></div><div class="dl"></div></div>
+
+  <!-- NAME SCREEN -->
+  <div id="name-screen">
+    <div class="card">
+      <p class="card-title">Think you know the menu? 🥟</p>
+      <p class="card-sub">20 questions. Menu knowledge, dim sum facts, guest service, and a few trick questions designed to expose overconfident people. You know who you are.<br><br>Streak bonuses in play. Top scores go on the leaderboard. No cheating — Elvis is watching.</p>
+      <input type="text" id="player-name" placeholder="Your name or nickname..." maxlength="20"/>
+      <button class="btn primary" onclick="startQuiz()">Start the quiz &rarr;</button>
+    </div>
+    <div class="fun-facts">
+      <p class="fun-fact-title">Did you know?</p>
+      <p>🥟 A proper xiaolongbao has exactly 18 pleats. Count them next time.</p>
+      <p>🫖 Tapping two fingers on the table after someone pours your tea is a silent thank you — a Qing dynasty tradition over 300 years old.</p>
+      <p>🍜 Shanghai has 24 million people. All of them have opinions about har gow.</p>
+      <p>🧡 Turmeric is what makes the lava sauce orange. It also makes your white shirt permanently orange. Handle accordingly.</p>
+    </div>
+    <div id="lb-preview" style="margin-top:1rem"></div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" style="display:none">
+    <div class="hud">
+      <span class="hud-score" id="score-label">Score: 0</span>
+      <span class="streak" id="streak-badge"></span>
+      <span class="hud-counter" id="q-counter">Q1 / 20</span>
+    </div>
+    <div class="prog"><div class="prog-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="card" id="q-card">
+      <div id="trick-wrap"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="opts" id="q-opts"></div>
+      <div class="feedback" id="q-feedback"></div>
+    </div>
+    <div class="nav"><button class="next-btn" id="next-btn" onclick="nextQ()">Next &rarr;</button></div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="result-screen" style="display:none">
+    <div class="card pop">
+      <div class="r-emoji" id="r-emoji"></div>
+      <div class="r-title" id="r-title"></div>
+      <div class="r-sub" id="r-sub"></div>
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-n" id="r-score"></div><div class="stat-l">Points</div></div>
+        <div class="stat"><div class="stat-n" id="r-pct"></div><div class="stat-l">Score</div></div>
+        <div class="stat"><div class="stat-n" id="r-streak"></div><div class="stat-l">Best streak</div></div>
+      </div>
+      <div id="leaderboard"></div>
+      <button class="btn" onclick="restartQuiz()" style="margin-top:1.25rem">Play again &rarr;</button>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+const Q = [
+  {
+    q:"How many grams of rice are in one bowl of steam rice?",
+    opts:["180g","220g","250g","300g"],
+    ans:2,
+    explain:"250g. Every. Single. Time. Not 249g. Not 251g. If you've been freestyling the scoop, this is your reckoning. The scale exists for a reason."
+  },
+  {
+    q:"What proportion of egg batter is used in the sweet and sour chicken?",
+    trick:true,
+    opts:["30% egg, 70% flour","50/50 egg and flour","Pure egg white only","None — there is no egg batter"],
+    ans:3,
+    explain:"TRICK QUESTION. There is no egg batter in the sweet and sour chicken. If you already told a table otherwise tonight, this is your sign to go back and fix that."
+  },
+  {
+    q:"What specific ingredient gives our lava sauce its distinctive orange colour?",
+    opts:["Paprika","Turmeric","Annatto / achiote","Saffron"],
+    ans:1,
+    explain:"Turmeric. Glorious, staining, relentless turmeric. It also dyes everything it touches permanently orange. Your white uniform shirt already knows."
+  },
+  {
+    q:"Xiaolongbao is a soup dumpling. What is the secret that makes it soupy after it's folded and cooked?",
+    opts:["The chef blows air into each one before sealing","Gelatinised stock (aspic) is added solid, then melts during steaming","The meat releases natural juices when kneaded correctly","Hot broth is injected by needle after cooking"],
+    ans:1,
+    explain:"Gelatinised stock — aspic — is mixed in solid with the filling. It melts into glorious hot soup during steaming, trapped inside the wrapper. Whoever invented this deserves a monument, a holiday, and a TV show."
+  },
+  {
+    q:"How many pleats should a correctly made xiaolongbao have?",
+    opts:["8","12","18","However many the chef manages on a busy Saturday"],
+    ans:2,
+    explain:"18 pleats. Not decorative — they're structural, keeping the soup sealed. The next time you see one, count them. Then try to look casual about it."
+  },
+  {
+    q:"What is the correct way to eat xiaolongbao without scalding yourself?",
+    opts:["Bite it whole immediately","Place on spoon, bite a small hole in the side, sip soup first, then eat","Cut it in half with chopsticks to release steam","Just blow on it and commit"],
+    ans:1,
+    explain:"Spoon. Small bite. Sip soup. Eat dumpling. In that order. Eating it whole means boiling soup on your chin in front of the table. We have all seen it. Don't be that person."
+  },
+  {
+    q:"In a professional kitchen, what does '86' mean?",
+    opts:["A menu item is sold out or unavailable","Table 86 is a VIP reservation","The oven is set to 86°C","It's end of service"],
+    ans:0,
+    explain:"'86'd' means the kitchen is out of that item — or sometimes that a guest has been asked to leave. If you didn't know this, consider this your most important lesson today."
+  },
+  {
+    q:"A guest insists har gow 'should be fried, not steamed' and asks you to fix it. What do you do?",
+    opts:["Apologise and take it to the kitchen to fry","Calmly explain — har gow is always steamed, that wrapper is the entire point","Offer a fried alternative without correcting them","Nod, smile, and bring out the same thing again"],
+    ans:1,
+    explain:"Stand your ground — kindly. That silky, translucent wrapper IS the dish. Re-frying it would be a crime against Cantonese cuisine dating back to the Song dynasty. Don't."
+  },
+  {
+    q:"What is the correct sequence for handling a formal guest complaint?",
+    opts:["Apologise → Fix → Inform manager → Document","Listen → Acknowledge → Fix → Follow up","Escalate to manager → Manager decides → Apologise","Offer a discount → Apologise → Move on"],
+    ans:1,
+    explain:"Listen first. Fully. Without planning your response mid-sentence. Acknowledge. Fix. Follow up. A discount is not empathy. It's a transaction. Don't confuse the two."
+  },
+  {
+    q:"A dim sum brunch table of 4 arrives. How many dim sum dishes should you recommend to start?",
+    trick:true,
+    opts:["2 dishes — keep it light","4 dishes — one per person logic","6 to 8 dishes — dim sum is sharing, not portions","Ask them, everyone is different"],
+    ans:2,
+    explain:"6 to 8 dishes for a table of 4. Dim sum is communal. One-dish-per-person is a Western lunch mindset applied to the wrong cuisine. Guide the experience. That's your job."
+  },
+  {
+    q:"Mid-service your POS crashes. Orders are coming in. What is the move?",
+    opts:["Pause all service until IT resolves it","Switch to manual order pads and communicate verbally with the kitchen","Accept cash orders only","Ask guests to wait until the system recovers"],
+    ans:1,
+    explain:"Manual pads. Kitchen verbals. Service continues. A POS crash is an inconvenience. Stopping service because of it is a management failure. Those are two very different things."
+  },
+  {
+    q:"In Chinese culture, what does tapping two fingers on the table mean after someone pours your tea?",
+    opts:["They want more tea","They are signalling they are full","It is a silent thank you — a Qing dynasty gesture","They are unhappy with the service"],
+    ans:2,
+    explain:"A silent thank you. A Qing Emperor, travelling incognito, poured tea for his companions. They couldn't bow without revealing him — so they tapped two bent fingers to represent a kowtow. That's 300 years of etiquette, at your tables, every single shift."
+  },
+  {
+    q:"Shanghai is called 'The Paris of the East.' What does Paris call itself?",
+    opts:["The Shanghai of the West","The City of Light","The New Shanghai of Europe","The Dim Sum Capital of France"],
+    ans:1,
+    explain:"The City of Light. Paris got there first with the nickname. Shanghai got there first with the dumplings. History is complicated."
+  },
+  {
+    q:"What is the Bund in Shanghai?",
+    opts:["A famous dim sum restaurant district","A historic waterfront promenade lined with colonial-era buildings","The Shanghai stock exchange","A type of steamed Chinese bun"],
+    ans:1,
+    explain:"The Bund is Shanghai's iconic waterfront — colonial architecture on one side, the Pudong skyline on the other. One of the most dramatic views on earth. None of our tables have that view, but we do have better xiaolongbao."
+  },
+  {
+    q:"Siu mai is traditionally topped with which ingredient in Cantonese dim sum?",
+    opts:["Black sesame seeds","A single whole prawn","Fish roe / tobiko","Shaved black truffle"],
+    ans:2,
+    explain:"Tobiko — fish roe. The tiny orange pearls on top of siu mai are not decoration. They're the detail that tells a guest this is a serious dim sum kitchen. Presentation is always part of the food."
+  },
+  {
+    q:"What is cheung fun made from?",
+    opts:["Wheat flour dough, steamed then rolled","Rice flour batter, steamed into thin sheets then rolled","Tapioca starch, deep fried","Egg noodles, blanched and rolled"],
+    ans:1,
+    explain:"Rice flour batter, steamed into silky thin sheets, then rolled around the filling. That smooth, yielding texture is the whole point. Nothing else eats quite like it and you should be able to explain that to a guest."
+  },
+  {
+    q:"What does LFL (like-for-like) sales growth measure?",
+    opts:["Growth including all new location openings","Year-on-year sales from the same trading locations","Growth after removing delivery revenue","Gross profit margin improvement"],
+    ans:1,
+    explain:"LFL strips out new openings and compares the same locations year-on-year. It's the cleanest measure of whether the business is actually growing or just getting bigger. If Elvis is asking about LFL in a briefing, it is not small talk."
+  },
+  {
+    q:"A guest leaves a 1-star Google review while still sitting in your restaurant. What do you do?",
+    opts:["Address it online after they leave","Approach them calmly right now — this is your best chance to recover it","Offer a discount without speaking to them","Ignore it — regulars don't read reviews"],
+    ans:1,
+    explain:"Go to them. Now. Genuinely, calmly, without being defensive. A real in-person recovery while they're still there is worth ten polished online responses. They may update the review. Or at least leave full and slightly less furious."
+  },
+  {
+    q:"Shanghai has a population of approximately how many people?",
+    opts:["8 million","15 million","24 million","40 million"],
+    ans:2,
+    explain:"About 24 million — one of the most populated cities on earth. That is a lot of people with opinions about soup dumplings. Stay sharp."
+  },
+  {
+    q:"What is the origin city of the original xiaolongbao?",
+    opts:["Beijing","Guangzhou","Nanxiang, Shanghai","Chengdu"],
+    ans:2,
+    explain:"Nanxiang — a suburb of Shanghai, invented in the 1870s. Nearly 150 years of soup dumplings. Some legacies are just built different. We happen to serve them."
+  }
+];
+
+const TOTAL=20, KEY='ns_quiz_v6';
+let questions=[],current=0,score=0,streak=0,best=0,answered=false,playerName='';
+
+function shuffle(a){return[...a].sort(()=>Math.random()-.5)}
+
+function startQuiz(){
+  playerName=(document.getElementById('player-name').value.trim()||'Anonymous').slice(0,20);
+  questions=shuffle(Q).slice(0,TOTAL);
+  current=0;score=0;streak=0;best=0;
+  document.getElementById('name-screen').style.display='none';
+  document.getElementById('game-screen').style.display='block';
+  renderQ();
+}
+
+function renderQ(){
+  const q=questions[current];
+  document.getElementById('q-counter').textContent='Q'+(current+1)+' / '+TOTAL;
+  document.getElementById('progress-fill').style.width=Math.round((current/TOTAL)*100)+'%';
+  document.getElementById('score-label').textContent='Score: '+score;
+  document.getElementById('trick-wrap').innerHTML=q.trick?'<span class="trick-tag">⚠ Trick question — read carefully</span>':'';
+  document.getElementById('q-text').textContent=q.q;
+  const L=['A','B','C','D'];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>
+    `<button class="opt" onclick="answer(${i})" id="opt-${i}"><span class="opt-letter">${L[i]}</span>${o}</button>`
+  ).join('');
+  const fb=document.getElementById('q-feedback');
+  fb.className='feedback';fb.textContent='';
+  document.getElementById('next-btn').style.display='none';
+  answered=false;
+  updateStreak();
+}
+
+function answer(idx){
+  if(answered)return;
+  answered=true;
+  const q=questions[current];
+  const ok=idx===q.ans;
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans)b.classList.add('correct');
+    else if(i===idx&&!ok)b.classList.add('wrong');
+  });
+  if(ok){score+=10+(streak>=2?5:0);streak++;if(streak>best)best=streak;}
+  else{streak=0;}
+  updateStreak();
+  document.getElementById('score-label').textContent='Score: '+score;
+  const fb=document.getElementById('q-feedback');
+  fb.className='feedback show '+(ok?'correct':'wrong');
+  fb.textContent=(ok?'✓ ':'✗ ')+q.explain;
+  const nb=document.getElementById('next-btn');
+  nb.style.display='inline-block';
+  nb.textContent=current+1<TOTAL?'Next →':'See results →';
+}
+
+function updateStreak(){
+  const el=document.getElementById('streak-badge');
+  if(streak>=2){el.textContent=streak+' streak 🔥';el.className='streak show';}
+  else{el.className='streak';}
+}
+
+function nextQ(){
+  current++;
+  if(current>=TOTAL){showResult();return;}
+  renderQ();
+}
+
+function showResult(){
+  document.getElementById('game-screen').style.display='none';
+  const rs=document.getElementById('result-screen');
+  rs.style.display='block';
+  const pct=Math.round((score/(TOTAL*10))*100);
+  let emoji,title,sub;
+  if(pct>=90){emoji='🏆';title='You are the menu.';sub='Genuinely flawless. At this point you should be writing the training manual. Elvis, take note. Seriously.';}
+  else if(pct>=75){emoji='🥟';title='Solid shift.';sub='Strong knowledge. The XLB aspic question did not break you. Respect. A few rough edges to polish but you are very much in the conversation.';}
+  else if(pct>=55){emoji='🍜';title='Getting there.';sub='Good base, real gaps. Spend 10 minutes with the menu bible this week. You will thank yourself when a table starts asking questions.';}
+  else if(pct>=40){emoji='🫖';title='Needs work.';sub='You know where the restaurant is. That is a start. Read the menu. All of it. Then come back and try again. We believe in you. Mostly.';}
+  else{emoji='😬';title='Oh dear.';sub="We appreciate that you played. We really do. But please have a quiet word with your manager this week. Not about the score — just in general.";}
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-title').textContent=title;
+  document.getElementById('r-sub').textContent=sub;
+  document.getElementById('r-score').textContent=score;
+  document.getElementById('r-pct').textContent=pct+'%';
+  document.getElementById('r-streak').textContent=best+'x';
+  saveBoard(score);
+}
+
+function saveBoard(myScore){
+  let board=[];
+  try{board=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+  board.push({name:playerName,score:myScore,date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'})});
+  board.sort((a,b)=>b.score-a.score);
+  board=board.slice(0,10);
+  try{localStorage.setItem(KEY,JSON.stringify(board));}catch(e){}
+  const myIdx=board.findIndex(e=>e.name===playerName&&e.score===myScore);
+  drawBoard('leaderboard',board,myIdx);
+}
+
+function drawBoard(id,board,myIdx){
+  const el=document.getElementById(id);
+  if(!el||!board.length)return;
+  const medals=['🥇','🥈','🥉'];
+  el.innerHTML='<p class="lb-head">Leaderboard</p>'+
+    board.map((e,i)=>`<div class="lb-row">
+      <span class="lb-rank">${medals[i]||'  '+(i+1)}</span>
+      <span class="lb-name">${e.name}${i===myIdx?'<span class="lb-you">you</span>':''}</span>
+      <span class="lb-pts">${e.score} pts</span>
+      <span class="lb-date">${e.date}</span>
+    </div>`).join('');
+}
+
+function showLbPreview(){
+  let board=[];
+  try{board=JSON.parse(localStorage.getItem(KEY)||'[]');}catch(e){}
+  if(!board.length)return;
+  const wrap=document.getElementById('lb-preview');
+  wrap.innerHTML='<div class="card" id="lb-prev-inner"></div>';
+  drawBoard('lb-prev-inner',board,-1);
+}
+
+function restartQuiz(){
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('name-screen').style.display='block';
+  document.getElementById('player-name').value=playerName;
+  showLbPreview();
+}
+
+document.getElementById('player-name').addEventListener('keydown',e=>{if(e.key==='Enter')startQuiz();});
+showLbPreview();
+</script>
+</body>
+</html>
